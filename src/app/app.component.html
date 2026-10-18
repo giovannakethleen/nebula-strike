@@ -1,0 +1,184 @@
+<main
+  id="home-page"
+  class="shell"
+  [class.home-shell]="screen === 'home'"
+  [class.light-theme]="isLightTheme"
+>
+  <header class="topbar">
+    <button
+      class="brand"
+      (click)="showScreen('home')"
+      aria-label="Voltar ao início"
+    >
+      <span class="brand-mark">✦</span>
+      <span>NEBULA<span class="brand-light"> STRIKE</span></span>
+    </button>
+    <button
+      class="theme-toggle"
+      type="button"
+      (click)="toggleTheme()"
+      [attr.aria-label]="isLightTheme ? 'Ativar tema escuro' : 'Ativar tema claro'"
+      [attr.title]="isLightTheme ? 'Ativar tema escuro' : 'Ativar tema claro'"
+    >
+      {{ isLightTheme ? "☾ Escuro" : "☀ Claro" }}
+    </button>
+  </header>
+
+  <section *ngIf="screen === 'home'" class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow"><span></span> Um jogo de nave espacial</p>
+      <h1>Sua missão começa<br /><span>no espaço.</span></h1>
+      <p class="intro">
+        Pilote sua nave, enfrente ondas de inimigos e tente chegar mais longe a
+        cada partida.
+      </p>
+      <div class="hero-actions">
+        <button class="primary-btn" (click)="startGame()">
+          Jogar agora <span aria-hidden="true">→</span>
+        </button>
+      </div>
+    </div>
+    <aside class="home-sidebar" aria-label="Controles e configurações">
+      <div class="ship-stage" role="img" aria-label="Uma nave atravessa o espaço">
+        <div class="orbit orbit-one"></div>
+        <div class="orbit orbit-two"></div>
+        <div class="planet"></div>
+        <div class="ship">
+          <div class="ship-wing left"></div>
+          <div class="ship-wing right"></div>
+          <div class="ship-body">
+            <div class="cockpit"></div>
+            <div class="ship-core"></div>
+          </div>
+          <div class="engine-flame"></div>
+        </div>
+      </div>
+      <section class="quick-guide" aria-labelledby="quick-guide-title">
+        <h2 id="quick-guide-title">Como jogar</h2>
+        <div class="control-list">
+          <div class="control-row">
+            <span class="key-group">
+              <kbd class="key-hint">W A S D</kbd>
+              <kbd class="key-hint">← ↑ ↓ →</kbd>
+            </span>
+            <span>Movimentar</span>
+          </div>
+          <div class="control-row">
+            <kbd class="key-hint wide">ESPAÇO</kbd><span>Segure para disparar</span>
+          </div>
+          <div class="control-row">
+            <kbd class="key-hint">ESC</kbd><span>Pausar ou continuar</span>
+          </div>
+        </div>
+        <div class="quick-guide-footer">
+          <div class="record-chip">
+            <span aria-hidden="true">★</span>
+            <span>Recorde</span>
+            <strong>{{ bestScore.toLocaleString("pt-BR") }}</strong>
+          </div>
+          <label class="volume-control">
+            <span aria-hidden="true">♫</span>
+            <span>Som</span>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              [value]="soundVolume"
+              (input)="setSoundVolume($event)"
+              [attr.aria-label]="'Volume do som: ' + (soundVolume * 100) + '%'"
+            />
+          </label>
+        </div>
+      </section>
+    </aside>
+  </section>
+
+  <section *ngIf="screen === 'game'" class="game-screen">
+    <div class="game-heading">
+      <div>
+        <p class="eyebrow">MISSÃO EM ANDAMENTO</p>
+        <h2>CAMPO DE BATALHA</h2>
+      </div>
+      <button class="secondary-btn compact" (click)="pauseGame()" [disabled]="gameEnded">
+        {{ gamePaused ? "▶ CONTINUAR" : "Ⅱ PAUSAR" }}
+      </button>
+    </div>
+    <div class="hud">
+      <div>
+        <small>PONTUAÇÃO</small
+        ><strong>{{ currentScore.toLocaleString("pt-BR") }}</strong>
+      </div>
+      <div>
+        <small>ONDA</small
+        ><strong>{{ currentWave.toString().padStart(2, "0") }}</strong>
+      </div>
+      <div>
+        <small>VIDAS</small
+        ><strong class="lives">{{ currentLives }} / {{ maxLives }}</strong
+        ><span
+          class="life-meter"
+          [attr.aria-label]="currentLives + ' vidas de ' + maxLives"
+          >{{
+            "♥".repeat(currentLives) + "♡".repeat(maxLives - currentLives)
+          }}</span
+        >
+      </div>
+    </div>
+    <div class="game-frame">
+      <div #gameHost class="game-host"></div>
+      <div *ngIf="gameEnded" class="game-over-overlay">
+        <p class="eyebrow">SINAL PERDIDO</p>
+        <h2>FIM DE JOGO</h2>
+        <p>
+          Pontuação final:
+          <strong>{{ currentScore.toLocaleString("pt-BR") }}</strong>
+        </p>
+        <p class="best-line">
+          RECORDE PESSOAL: {{ bestScore.toLocaleString("pt-BR") }}
+        </p>
+        <button class="primary-btn" (click)="restartGame()">
+          ↻ TENTAR NOVAMENTE
+        </button>
+        <button class="secondary-btn" (click)="backToMenu()">
+          VOLTAR AO MENU
+        </button>
+      </div>
+      <div *ngIf="gamePaused && !gameEnded" class="pause-overlay">
+        <div class="pause-card">
+          <p class="eyebrow">MISSÃO PAUSADA</p>
+          <h2>Respire um pouco.</h2>
+          <button class="primary-btn" (click)="pauseGame()">
+            ▶ &nbsp; CONTINUAR JOGO
+          </button>
+        </div>
+      </div>
+    </div>
+    <p class="game-help">
+      WASD / SETAS: MOVIMENTAR <span>•</span> ESPAÇO: DISPARAR
+      <span>•</span> ESC: PAUSAR
+    </p>
+    <button class="text-btn" type="button" (click)="backToMenu()">← ABANDONAR MISSÃO</button>
+  </section>
+
+  <section *ngIf="screen === 'ranking'" class="info-screen">
+    <p class="eyebrow">HALL DA FAMA</p>
+    <h2>RANKING GLOBAL</h2>
+    <p class="intro">
+      O ranking online será conectado ao backend Laravel em uma próxima etapa.
+    </p>
+    <div class="local-score">
+      <span>SEU RECORDE LOCAL</span
+      ><strong>{{ bestScore.toLocaleString("pt-BR") }}</strong>
+    </div>
+    <button class="text-btn" type="button" (click)="showScreen('home')">← VOLTAR</button>
+  </section>
+
+  <footer class="footer">
+    <span>NEBULA STRIKE © V1-2026</span
+    ><span>Feito para quem gosta de uma boa partida</span
+    ><button class="utility-btn" type="button" (click)="toggleSound()">
+      {{ isSoundActive ? "♫ Som ativo" : "♪ Som desativado" }}
+    </button>
+  </footer>
+</main>
